@@ -7,6 +7,7 @@ plugins {
     checkstyle
     jacoco
     id("com.github.johnrengelman.shadow") version "8.1.1"
+    id("io.freefair.lombok") version "8.3"
 }
 
 group = "hexlet.code"
@@ -23,6 +24,7 @@ tasks.withType<JavaCompile> {
     options.release.set(20)
 }
 dependencies {
+    compileOnly("org.projectlombok:lombok:1.18.30")
     implementation("com.h2database:h2:2.2.222")
     implementation("com.zaxxer:HikariCP:5.0.1")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.15.2")
@@ -32,6 +34,7 @@ dependencies {
     implementation("io.javalin:javalin:5.6.2")
     implementation("io.javalin:javalin-bundle:5.6.2")
     implementation("io.javalin:javalin-rendering:5.6.2")
+    implementation("org.postgresql:postgresql:42.2.23")
     testImplementation("org.assertj:assertj-core:3.24.2")
     testImplementation(platform("org.junit:junit-bom:5.9.1"))
     testImplementation("org.junit.jupiter:junit-jupiter")
