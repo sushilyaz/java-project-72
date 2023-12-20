@@ -23,8 +23,13 @@ import gg.jte.resolve.ResourceCodeResolver;
 
 @Slf4j
 public final class App {
+    public static final String DEFAULT_PORT = "7070";
     private static String getjdbcUrl() {
         return System.getenv().getOrDefault("JDBC_DATABASE_URL", "jdbc:h2:mem:Url");
+    }
+    private static int getPort() {
+        String port = System.getenv().getOrDefault("PORT", DEFAULT_PORT);
+        return Integer.parseInt(port);
     }
 
     private static TemplateEngine createTemplateEngine() {
@@ -64,6 +69,6 @@ public final class App {
 
     public static void main(String[] args) throws SQLException, IOException {
         Javalin app = getApp();
-        app.start(7070);
+        app.start(getPort());
     }
 }
