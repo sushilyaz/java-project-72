@@ -1,5 +1,13 @@
-@template.layout.page (
+@import hexlet.code.dto.BasePage
+@param BasePage page = null
+
+@template.page (
     content = @`
+    @if(page != null && page.getFlash() != null)
+        <div class="alert alert-${page.getFlashType()}" role="alert">
+            ${page.getFlash()}
+        </div>
+    @endif
     <main class="flex-grow-1">
         <section>
             <div class="container-fluid bg-dark p-5">
