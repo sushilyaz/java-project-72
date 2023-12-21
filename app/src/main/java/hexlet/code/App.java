@@ -58,8 +58,11 @@ public final class App {
             statement.execute(sql);
         }
         BaseRepository.dataSource = dataSource;
+        Javalin app = Javalin.create(config -> {
+            config.plugins.enableDevLogging();
+        });
         JavalinJte.init(createTemplateEngine());
-        Javalin app = Javalin.create();
+        app.before(ctx -> ctx.contentType("text/html; charset=utf-8"));
         app.get(NamedRoutes.rootPath(), RootController::index);
         app.post(NamedRoutes.urlsPath(), UrlController::create);
         app.get(NamedRoutes.urlsPath(), UrlController::index);

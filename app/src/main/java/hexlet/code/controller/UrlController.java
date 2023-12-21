@@ -5,7 +5,6 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Collections;
 import java.net.URL;
-import java.util.Optional;
 
 import hexlet.code.dto.UrlPage;
 import hexlet.code.dto.UrlsPage;
@@ -29,7 +28,6 @@ public class UrlController {
                 name = urlObj.getProtocol() + "://" + urlObj.getHost();
             }
         } catch (MalformedURLException e) {
-            // добавить обработчик флеш сообщения
             ctx.sessionAttribute("flash", "Некорректный URL");
             ctx.sessionAttribute("flash-type", "danger");
             ctx.redirect(NamedRoutes.rootPath());
