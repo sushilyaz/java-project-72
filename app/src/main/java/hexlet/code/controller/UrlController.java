@@ -3,14 +3,21 @@ package hexlet.code.controller;
 import java.net.MalformedURLException;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.Collections;
-import java.net.URL;
 
+import java.net.URL;
+import java.util.*;
+import java.util.stream.*;
+
+
+import hexlet.code.dto.UrlCheckPage;
 import hexlet.code.dto.UrlPage;
 import hexlet.code.dto.UrlsPage;
+import hexlet.code.model.UrlCheck;
+import hexlet.code.repository.UrlCheckRepository;
 import hexlet.code.repository.UrlRepository;
 import hexlet.code.model.Url;
 
+import hexlet.code.util.FormatTimestamp;
 import hexlet.code.util.NamedRoutes;
 import io.javalin.http.Context;
 import io.javalin.http.NotFoundResponse;
@@ -20,6 +27,7 @@ public class UrlController {
         String url = ctx.formParam("url");
         URL urlObj = null;
         String name = "";
+        var createdAt = FormatTimestamp.formatTimestamp(new Timestamp(System.currentTimeMillis()));
         try {
             urlObj = new URL(url);
             if (urlObj.getPort() != -1) {
@@ -33,8 +41,9 @@ public class UrlController {
             ctx.redirect(NamedRoutes.rootPath());
             return;
         }
+
         if (UrlRepository.find(name).isEmpty()) {
-            var resUrl = new Url(name, new Timestamp(System.currentTimeMillis()));
+            var resUrl = new Url(name, createdAt);
             UrlRepository.save(resUrl);
             ctx.sessionAttribute("flash", "Страница успешно добавлена");
             ctx.sessionAttribute("flash-type", "success");
@@ -48,17 +57,37 @@ public class UrlController {
 
     public static void index(Context ctx) throws SQLException {
         var urls = UrlRepository.getEntities();
-        var page = new UrlsPage(urls);
+        Map<Url, UrlCheck> res = new HashMap<>();
+        for (var url : urls) {
+            var checkUrl = UrlCheckRepository.findLatestCheck(url.getId());
+            if (checkUrl.isPresent()) {
+                res.put(url, checkUrl.get());
+            } else {
+                res.put(url, new UrlCheck(0, null));
+            }
+        }
+        Map<Url, UrlCheck> sortedRes = new HashMap<>();
+        sortedRes = res.entrySet()
+                .stream()
+                .sorted(Comparator.comparing(entry -> entry.getKey().getId()))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
+        var page = new UrlsPage(sortedRes);
         page.setFlash(ctx.consumeSessionAttribute("flash"));
         page.setFlashType(ctx.consumeSessionAttribute("flash-type"));
         ctx.render("indexUrls.jte", Collections.singletonMap("page", page));
     }
+
     public static void show(Context ctx) throws SQLException {
         var id = ctx.pathParamAsClass("id", int.class).get();
         var url = UrlRepository.findById(id)
                 .orElseThrow(() -> new NotFoundResponse("Url not found"));
+        List<UrlCheck> urlChecks = new ArrayList<>();
+        urlChecks = UrlCheckRepository.getEntities(id);
         var page = new UrlPage(url);
-        ctx.render("showUrl.jte", Collections.singletonMap("page", page));
+        var pageCheck = new UrlCheckPage(urlChecks);
+        page.setFlash(ctx.consumeSessionAttribute("flash"));
+        page.setFlashType(ctx.consumeSessionAttribute("flash-type"));
+        ctx.render("showUrl.jte", Map.of("page", page, "pageCheck", pageCheck));
     }
 
 

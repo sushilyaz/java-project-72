@@ -1,8 +1,17 @@
 @import hexlet.code.dto.UrlPage
+@import hexlet.code.dto.UrlCheckPage
+@import hexlet.code.util.*
+@import java.text.*
 @param UrlPage page
+@param UrlCheckPage pageCheck
 @template.page(
 
     content = @`
+    @if(page != null && page.getFlash() != null)
+        <div class="alert alert-${page.getFlashType()}" role="alert">
+            ${page.getFlash()}
+        </div>
+    @endif
     <div class="container-lg mt-5">
         <h1>Сайт: ${page.getUrl().getName()}</h1>
 
@@ -18,13 +27,13 @@
             </tr>
             <tr>
                 <td>Дата создания</td>
-                <td>${page.getUrl().getCreatedAt().toString()}</td>
+                <td>${new SimpleDateFormat("dd/MM/yy HH:mm").format(page.getUrl().getCreatedAt())}</td>
             </tr>
             </tbody>
         </table>
 
         <h2 class="mt-5">Проверки</h2>
-        <form method="post" action="/urls/1/checks">
+        <form method="post" action="${NamedRoutes.urlCheckPath(page.getUrl().getId())}">
             <button type="submit" class="btn btn-primary">Запустить проверку</button>
         </form>
 
@@ -38,7 +47,28 @@
                 <th class="col-2">Дата проверки</th>
             </tr></thead>
             <tbody>
-
+            @for(var urlCheck : pageCheck.getUrlChecks())
+                <tr>
+                    <td>
+                        ${urlCheck.getId()}
+                    </td>
+                    <td>
+                        ${urlCheck.getStatusCode()}
+                    </td>
+                    <td>
+                        ${urlCheck.getTitle()}
+                    </td>
+                    <td>
+                        ${urlCheck.getH1()}
+                    </td>
+                    <td>
+                        ${urlCheck.getDescription()}
+                    </td>
+                    <td>
+                        ${new SimpleDateFormat("dd/MM/yy HH:mm").format(urlCheck.getCreatedAt())}
+                    </td>
+                </tr>
+            @endfor
             </tbody>
         </table>
     </div>
