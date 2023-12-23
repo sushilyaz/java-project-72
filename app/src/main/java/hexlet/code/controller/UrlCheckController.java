@@ -16,7 +16,7 @@ import java.sql.Timestamp;
 
 public class UrlCheckController {
     public static void create(Context ctx) throws SQLException {
-        var id = ctx.pathParamAsClass("id", Integer.class);
+        var id = ctx.pathParamAsClass("id", Long.class);
         var url = UrlRepository.findById(id.get());
         var domain = url.get().getName();
         var urlId = id.get();

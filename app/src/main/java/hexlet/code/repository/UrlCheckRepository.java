@@ -14,7 +14,7 @@ public class UrlCheckRepository extends BaseRepository {
                 + " VALUES (?,?,?,?,?,?)";
         try (var conn = dataSource.getConnection();
              var preparedStatement = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            preparedStatement.setInt(1, urlCheck.getUrlId());
+            preparedStatement.setLong(1, urlCheck.getUrlId());
             preparedStatement.setInt(2, urlCheck.getStatusCode());
             preparedStatement.setString(3, urlCheck.getH1());
             preparedStatement.setString(4, urlCheck.getTitle());
@@ -23,23 +23,23 @@ public class UrlCheckRepository extends BaseRepository {
             preparedStatement.executeUpdate();
             var generatedKeys = preparedStatement.getGeneratedKeys();
             if (generatedKeys.next()) {
-                urlCheck.setId(generatedKeys.getInt(1));
+                urlCheck.setId(generatedKeys.getLong(1));
             } else {
                 throw new SQLException("DB have not returned an id after saving an entity");
             }
         }
     }
 
-    public static List<UrlCheck> getEntities(int urlId) throws SQLException {
+    public static List<UrlCheck> getEntities(Long urlId) throws SQLException {
         var sql = "SELECT * FROM url_checks WHERE url_id = ?";
         try (var conn = dataSource.getConnection();
              var preparedStatement = conn.prepareStatement(sql)) {
-            preparedStatement.setInt(1, urlId);
+            preparedStatement.setLong(1, urlId);
             var resultSet = preparedStatement.executeQuery();
             var result = new ArrayList<UrlCheck>();
             while (resultSet.next()) {
-                var id = resultSet.getInt("id");
-                var ulrId = resultSet.getInt("url_id");
+                var id = resultSet.getLong("id");
+                var ulrId = resultSet.getLong("url_id");
                 var statusCode = resultSet.getInt("status_code");
                 var h1 = resultSet.getString("h1");
                 var title = resultSet.getString("title");
@@ -52,7 +52,7 @@ public class UrlCheckRepository extends BaseRepository {
             return result;
         }
     }
-    public static Optional<UrlCheck> findLatestCheck(int urlId) throws SQLException {
+    public static Optional<UrlCheck> findLatestCheck(Long urlId) throws SQLException {
         var sql = "SELECT status_code, created_at FROM url_checks WHERE url_id = ? ORDER BY id DESC LIMIT 1";
         try (var conn = dataSource.getConnection();
              var stmt = conn.prepareStatement(sql)) {
@@ -69,7 +69,7 @@ public class UrlCheckRepository extends BaseRepository {
             return Optional.empty();
         }
     }
-    public static List<UrlCheck> find(int urlId) throws SQLException {
+    public static List<UrlCheck> find(Long urlId) throws SQLException {
         var sql = "SELECT * FROM url_checks WHERE url_id = ?";
         try (var conn = dataSource.getConnection();
              var stmt = conn.prepareStatement(sql)) {
@@ -78,7 +78,7 @@ public class UrlCheckRepository extends BaseRepository {
             var resultSet = stmt.executeQuery();
 
             var results = new ArrayList<UrlCheck>();
-            var currentListId = 1;
+            var currentListId = 1L;
 
             while (resultSet.next()) {
                 var statusCode = resultSet.getInt("status_code");

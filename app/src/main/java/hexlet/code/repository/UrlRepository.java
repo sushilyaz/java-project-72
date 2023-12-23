@@ -18,7 +18,7 @@ public class UrlRepository extends BaseRepository {
             preparedStatement.executeUpdate();
             var generatedKeys = preparedStatement.getGeneratedKeys();
             if (generatedKeys.next()) {
-                url.setId(generatedKeys.getInt(1));
+                url.setId(generatedKeys.getLong(1));
             } else {
                 throw new SQLException("DB have not returned an id after saving an entity");
             }
@@ -32,7 +32,7 @@ public class UrlRepository extends BaseRepository {
             stmt.setString(1, name);
             var resultSet = stmt.executeQuery();
             if (resultSet.next()) {
-                var id = resultSet.getInt("id");
+                var id = resultSet.getLong("id");
                 var createdAt = resultSet.getTimestamp("created_at");
                 var url = new Url(name, createdAt);
                 url.setId(id);
@@ -42,11 +42,11 @@ public class UrlRepository extends BaseRepository {
         }
     }
 
-    public static Optional<Url> findById(int id) throws SQLException {
+    public static Optional<Url> findById(Long id) throws SQLException {
         var sql = "SELECT * FROM urls WHERE id = ?";
         try (var conn = dataSource.getConnection();
              var stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, id);
+            stmt.setLong(1, id);
             var resultSet = stmt.executeQuery();
             if (resultSet.next()) {
                 var name = resultSet.getString("name");
@@ -66,7 +66,7 @@ public class UrlRepository extends BaseRepository {
             var resultSet = preparedStatement.executeQuery();
             var result = new ArrayList<Url>();
             while (resultSet.next()) {
-                var id = resultSet.getInt("id");
+                var id = resultSet.getLong("id");
                 var name = resultSet.getString("name");
                 var createdAt = resultSet.getTimestamp("created_at");
                 var url = new Url(name, createdAt);

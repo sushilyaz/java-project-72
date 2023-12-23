@@ -8,7 +8,7 @@ import java.sql.Timestamp;
 @Setter
 @ToString
 public final class Url {
-    private int id;
+    private Long id;
 
     @ToString.Include
     private String name;
