@@ -37,7 +37,7 @@ dependencies {
     implementation("org.postgresql:postgresql:42.2.23")
     implementation("com.konghq:unirest-java:3.14.5")
     implementation("org.jsoup:jsoup:1.17.1")
-
+    testImplementation("com.squareup.okhttp3:mockwebserver:4.11.0")
     testImplementation("org.assertj:assertj-core:3.24.2")
     testImplementation(platform("org.junit:junit-bom:5.9.1"))
     testImplementation("org.junit.jupiter:junit-jupiter")
