@@ -10,28 +10,44 @@ import io.javalin.http.Context;
 import kong.unirest.Unirest;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import io.javalin.http.NotFoundResponse;
 
 import java.sql.SQLException;
 import java.sql.Timestamp;
 
 public class UrlCheckController {
     public static void create(Context ctx) throws SQLException {
-        var id = ctx.pathParamAsClass("id", Long.class);
-        var url = UrlRepository.findById(id.get());
-        var domain = url.get().getName();
-        var urlId = id.get();
-        int statusCode = Unirest.get(domain).asString().getStatus();
-        // Использование jsoup для парсинга HTML
-        String htmlContent = ParseHtml.getHtmlContent(domain);
-        Document doc = Jsoup.parse(htmlContent);
-        String h1 = ParseHtml.getH1(doc);
-        String title = ParseHtml.getTitle(doc);
-        String description = ParseHtml.getDescription(doc);
-        var createdAt = FormatTimestamp.formatTimestamp(new Timestamp(System.currentTimeMillis()));
-        var urlCheck = new UrlCheck(urlId, statusCode, h1, title, description, createdAt);
-        UrlCheckRepository.save(urlCheck);
-        ctx.sessionAttribute("flash", "Страница успешно проверена");
-        ctx.sessionAttribute("flash-type", "success");
-        ctx.redirect(NamedRoutes.urlPath(id.get()));
+        var urlId = ctx.pathParamAsClass("id", Long.class).get();
+
+        var url = UrlRepository.findById(urlId)
+                .orElseThrow(() -> new NotFoundResponse("Запись с таким ID не найдена"));
+        var name = url.getName();
+
+        try {
+            var response = Unirest.get(name).asString();
+            Document responseBody = Jsoup.parse(response.getBody());
+
+            int statusCode = response.getStatus();
+
+            String h1 = responseBody.selectFirst("h1") != null
+                    ? responseBody.selectFirst("h1").text() : "";
+
+            String title = responseBody.title();
+
+            String description = !responseBody.select("meta[name=description]").isEmpty()
+                    ? responseBody.select("meta[name=description]").get(0).attr("content") : "";
+
+            var createdAt = new Timestamp(System.currentTimeMillis());
+
+            var urlCheck = new UrlCheck(urlId, statusCode, h1, title, description, createdAt);
+            urlCheck.setUrlId(urlId);
+            UrlCheckRepository.save(urlCheck);
+            ctx.sessionAttribute("flash", "Страница успешно проверена");
+            ctx.sessionAttribute("flash-type", "success");
+            ctx.redirect(NamedRoutes.urlPath(urlId));
+        } catch (RuntimeException e) {
+            ctx.sessionAttribute("message", "Проверка не прошла");
+            ctx.redirect(NamedRoutes.urlPath(urlId));
+        }
     }
 }
