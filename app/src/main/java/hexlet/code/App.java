@@ -26,7 +26,7 @@ import gg.jte.resolve.ResourceCodeResolver;
 public final class App {
     public static final String DEFAULT_PORT = "7070";
     private static String getjdbcUrl() {
-        return System.getenv().getOrDefault("JDBC_DATABASE_URL", "jdbc:h2:mem:Url");
+        return System.getenv().getOrDefault("JDBC_DATABASE_URL", "jdbc:h2:mem:project");
     }
     private static int getPort() {
         String port = System.getenv().getOrDefault("PORT", DEFAULT_PORT);
